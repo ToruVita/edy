@@ -126,6 +126,19 @@ function edyKeydown(e){
 		}
 	}
 }
+function saveToLocal(){
+	var sul = document.querySelector("#tbs li.selected");
+	var blob = new Blob([ localStorage.getItem(sul.innerText) ], { "type" : "text/plain" });
+	var dl = document.createElement("a");
+	alert(sul.innerText);
+	dl.innerText = sul.innerText;
+	dl.setAttribute("download", sul.innerText);
+	dl.href = window.URL.createObjectURL(blob);
+	sul.innerText = "";
+	sul.append(dl);
+	dl.click();
+	sul.innerText = dl.innerText;
+}
 </script>
 
 <style>
@@ -174,6 +187,7 @@ label input{
 <menu>
 <label>NEW<input type="button" onclick="tabNew('untitled.txt')" /></label>
 <label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
+<label>SAVE<input type="button" onclick="saveToLocal()" /></label>
 </menu>
 
 <ul class="tab" id="tbs"></ul><div style="clear:both"></div>
