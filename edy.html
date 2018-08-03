@@ -1,0 +1,191 @@
+<script>
+var editableExt = /\.(txt|html|jsp|java|c)/;
+function tabNew(s){
+	var flg = 0;
+	for(var i = 0; i < tbs.children.length; i++){
+		if(tbs.children[i].innerText == s){
+			flg = 1;
+		}
+	}
+	if(flg == 0){
+		var li = document.createElement("li");
+		li.innerText = s;
+		li.setAttribute("tabindex", tbs.children.length+2);
+		li.addEventListener("focus", function(e){tabSel(this);});
+		li.addEventListener("blur", function(){
+			if(this.innerText.trim().length==0){
+				tagDel(this);
+			}else{
+				tagRen(this);
+			}
+		});
+		if(s.substr(0,1)=='!'){
+			li.classList.add("fixed");
+		}
+		tbs.append(li);
+	}
+}
+function tagDel(t){
+	localStorage.removeItem(t.getAttribute("oldName"));
+	t.parentNode.removeChild(t);
+}
+function tagRen(t){
+	edy2localStorage();
+	localStorage.removeItem(t.getAttribute("oldName"));
+	t.removeAttribute("oldName");
+}
+function tabSel(t){
+	if(t.classList.contains("selected")){
+		t.setAttribute("oldName", t.innerText);
+		t.setAttribute("contenteditable", true);
+	}else{
+		for(var i = 0; i < tbs.children.length; i++){
+			tbs.children[i].classList.remove("selected");
+			tbs.children[i].removeAttribute("contenteditable");
+		}
+		t.classList.add("selected");
+		if(t.classList.contains("fixed")){
+			edy.removeAttribute("contenteditable");
+		}else{
+			edy.setAttribute("contenteditable", true);
+		}
+		localStorage2edy(t.innerText);
+	}
+}
+function loadLocalFiles(t){
+	for(var i = 0; i < t.files.length; i++){
+		if(t.files[i].name.match(editableExt)){
+			file2localStorage(t.files[i]);
+			tabNew(t.files[i].name);
+		}
+	}
+}
+function file2localStorage(f){
+	var reader = new FileReader();
+	reader.onload = function () {
+		localStorage.setItem(f.name, reader.result);
+	}
+	reader.readAsText(f);
+}
+function localStorage2edy(k){
+	edy.innerText = "";
+	var str = localStorage.getItem(k);
+	var ss = str.split("\n");
+	ss.forEach(s=>{
+		var li = document.createElement("li");
+		var ind = 1+s.lastIndexOf("\t");
+		if(ind>0){
+			li.setAttribute("indent", ind);
+		}
+		if(s.match(/<input class .+/)!=null){
+			li.innerHTML = s.trim();
+		}else{
+			li.innerText = s.trim();
+		}
+		edy.append(li);
+	});
+}
+function edy2localStorage(){
+	var sul = document.querySelector("#tbs li.selected");
+	var str = "";
+	for(var i = 0; i < edy.children.length; i++){
+		if(str.length>0){
+			str = str + "\n";
+		}
+		for(var j = 0; j < parseInt(edy.children[i].getAttribute("indent")); j++){
+			str = str + "\t";
+		}
+		str = str + edy.children[i].innerText;
+	}
+	localStorage.setItem(sul.innerText, str);
+}
+function edyIndentUp(t, i){
+	var s = t.getAttribute("indent");
+	if(s==null){
+		s="0";
+	}
+	var ind = parseInt(s);
+	ind = ind + i;
+	if(ind < 1){
+		t.removeAttribute("indent");
+	}else{
+		t.setAttribute("indent", ind);
+	}
+}
+function edyKeydown(e){
+	var selection = window.getSelection();
+	var range = selection.getRangeAt(0);
+	var txtnd = range.commonAncestorContainer;
+	var nd = txtnd.parentNode;
+	if(e.keyCode==9){
+		e.preventDefault();
+		if(e.shiftKey){
+			edyIndentUp(nd, -1);
+		}else{
+			edyIndentUp(nd, 1);
+		}
+	}
+}
+</script>
+
+<style>
+body{
+	background-color: gray;
+}
+#tbs li{
+	float:left;
+	list-style-type:none;
+	border:black solid 1px;
+	border-radius: 10px 10px 0px 0px;
+	padding: 0px 3px;
+	background-color: darkgray;
+}
+#tbs li.selected{
+	border-bottom:solid lightgray 1px;
+	background-color: lightgray;
+}
+#tbs li[contenteditable]{
+	background-color: white;
+}
+#edy{
+	margin-top:0px;
+	background-color: lightgray;
+	border-radius: 10px 10px;
+}
+#edy[contenteditable]{
+	background-color: white;
+}
+#edy li{
+	border-bottom: dashed 1px blue;
+}
+#edy li[indent="1"]{padding-left:2em;}
+#edy li[indent="2"]{padding-left:4em;}
+#edy li[indent="3"]{padding-left:6em;}
+#edy li[indent="4"]{padding-left:8em;}
+#edy li[indent="5"]{padding-left:10em;}
+#edy li[indent="6"]{padding-left:12em;}
+#edy li[indent="7"]{padding-left:14em;}
+#edy li[indent="8"]{padding-left:16em;}
+label input{
+	display:none;
+}
+</style>
+
+<menu>
+<label>NEW<input type="button" onclick="tabNew('untitled.txt')" /></label>
+<label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
+</menu>
+
+<ul class="tab" id="tbs"></ul><div style="clear:both"></div>
+
+<ol id="edy">
+<li></li>
+</ol>
+
+<script>
+Object.keys(localStorage).forEach(k=>{
+	tabNew(k);
+});
+edy.addEventListener("blur", function(){edy2localStorage();});
+edy.addEventListener("keydown", function(e){edyKeydown(e);});
+</script>
