@@ -52,13 +52,17 @@ function tabSel(t){
 		}
 		localStorage2edy(t.innerText);
 	}
+	showFiles(false);
 }
 function loadLocalFiles(t){
 	for(var i = 0; i < t.files.length; i++){
-		if(t.files[i].name.match(editableExt)){
+		if(t.files[i].name.match(editableExt)!=null){
 			file2localStorage(t.files[i]);
+		}else{
+			files.push(t.files[i]);
 		}
 	}
+	tbs.children[0].click();
 }
 function file2localStorage(f){
 	var reader = new FileReader();
@@ -143,6 +147,83 @@ function saveToLocal(){
 	dl.click();
 	sul.innerText = dl.innerText;
 }
+function showFiles(b){
+	if(b){
+		edy.style.display="none";
+		fls.style.display="block";
+		fls.innerText = "次のファイルをアップロードします．";
+		for(var i = 1; i < tbs.children.length; i++){
+			if(tbs.children[i].classList.contains("selected")){
+				tbs.children[i].classList.remove("selected");
+			}
+			var li = document.createElement("li");
+			li.innerText=tbs.children[i].innerText;
+			li.style.listStyleType="disc";
+			li.addEventListener("click", function(e){
+				if(this.style.listStyleType=="disc"){
+					this.style.listStyleType="circle";
+				}else{
+					this.style.listStyleType="disc";
+				}
+			});
+			fls.append(li);
+		}
+		files.forEach(f=>{
+			var li = document.createElement("li");
+			li.innerText=f.name;
+			li.style.listStyleType="disc";
+			li.addEventListener("click", function(e){
+				if(this.style.listStyleType=="disc"){
+					this.style.listStyleType="circle";
+				}else{
+					this.style.listStyleType="disc";
+				}
+			});
+			fls.append(li);
+		});
+		tbs.children[0].classList.add("selected");
+	}else{
+		edy.style.display="block";
+		fls.style.display="none";
+	}
+}
+function isFileForUp(fnm){
+	var flg = false;
+	for(var i = 0; i < fls.children.length; i++){
+		if(fls.children[i].name==fnm){
+			if(fls.children[i].style.listStyleType!="circle"){
+				flg = true;
+			}
+		}
+	}
+	return flg;
+}
+function sendToServer(){
+	var formData = new FormData();
+	files.forEach(f=>{
+		if(isFileForUp(f.name)){
+			formData.append("file", f);
+		}
+	});
+	for(var i = 1; i < tbs.children.length; i++){
+		var fnm = tbs.children[i].innerText;
+		if(isFileForUp(fnm)){
+			var blob = new Blob([localStorage.getItem(fnm)], { type: "text/xml"});
+			formData.append("webmasterfile", blob, fnm);
+		}
+	}
+
+	formData.append("userID", "u0001");
+	formData.append("questionID", "q0001");
+	var xhr = new XMLHttpRequest();
+	xhr.upload.addEventListener("progress", function(e){
+		msg.innerText = e.loaded;
+		msg.append(" / ");
+		msg.append(""+e.total);
+	}, false);
+	xhr.open("POST", "up.jsp");
+	xhr.send(formData);
+}
 </script>
 
 <style>
@@ -164,7 +245,7 @@ body{
 #tbs li[contenteditable]{
 	background-color: white;
 }
-#edy{
+#edy,#fls{
 	margin-top:0px;
 	background-color: lightgray;
 	border-radius: 10px 10px;
@@ -192,20 +273,27 @@ label input{
 <label>NEW<input type="button" onclick="tabNew('untitled.txt')" /></label>
 <label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
 <label>SAVE<input type="button" onclick="saveToLocal()" /></label>
+<label>UPLOAD<input type="button" onclick="sendToServer()" /></label>
 </menu>
 <p>
 このエディタはコード作成用です．ノートパッドやちゃんとしたアプリケーションを使いたくない場合に使います．
-This editor is for editing a code. When do not want to use notepad or application.
+<span lang="e">This editor is for editing a code. When do not want to use notepad or application.</span>
 上のメニューから「NEW」を選択すると，新規の文書がuntitled.txtとして作成されます．
 「OPEN」から，既存のコードを選択してそのコピーを開くことも出来ます．「SAVE」は編集中のデータをダウンロードします．
 ファイル名の編集は，コードの編集後タグを再度選択すると編集可能になります．このときファイル名をすべて消すと編集中のコードも消えます．
 編集領域へのコピペなどでレイアウトが崩れた場合は，リロードすると正常化することがあります．
 </p>
-<ul class="tab" id="tbs"></ul><div style="clear:both"></div>
+
+<ul class="tab" id="tbs">
+	<li onclick="showFiles(true)">FILES</li>
+</ul><div style="clear:both"></div>
 
 <ol id="edy">
 <li></li>
 </ol>
+
+<ul id="fls">次のファイルをアップロードします．
+</ul>
 
 <script>
 Object.keys(localStorage).forEach(k=>{
@@ -213,4 +301,5 @@ Object.keys(localStorage).forEach(k=>{
 });
 edy.addEventListener("blur", function(){edy2localStorage();});
 edy.addEventListener("keydown", function(e){edyKeydown(e);});
+var files = [];
 </script>
