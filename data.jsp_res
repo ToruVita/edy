@@ -1,0 +1,7 @@
+tokenCount = 10
+marks = 2
+A.java(5)
+B.java(5)
+	public int getData(){
+		return data;
+	}

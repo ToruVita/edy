@@ -51,6 +51,7 @@ function tabSel(t){
 			edy.setAttribute("contenteditable", true);
 		}
 		localStorage2edy(t.innerText);
+		markUp(t.innerText);
 	}
 	showFiles(false);
 }
@@ -90,8 +91,16 @@ function localStorage2edy(k){
 		}else{
 			li.innerText = s.trim();
 		}
+		markUp(li, edy.children.length, k);
 		edy.append(li);
 	});
+}
+function markUp(targetElement, lineNo, fnm){
+	if(fnm=="!A.java" || fnm=="!B.java"){
+		if(lineNo+1>=5 && lineNo+1<5+3){
+			targetElement.classList.add("mark");
+		}
+	}
 }
 function edy2localStorage(){
 	var sul = document.querySelector("#tbs li.selected");
@@ -158,7 +167,11 @@ function showFiles(b){
 			}
 			var li = document.createElement("li");
 			li.innerText=tbs.children[i].innerText;
-			li.style.listStyleType="disc";
+			if(li.innerText.substr(0,1)=='!'){
+				li.style.listStyleType="circle";
+			}else{
+				li.style.listStyleType="disc";
+			}
 			li.addEventListener("click", function(e){
 				if(this.style.listStyleType=="disc"){
 					this.style.listStyleType="circle";
@@ -224,13 +237,48 @@ function sendToServer(){
 	xhr.open("POST", "up.jsp");
 	xhr.send(formData);
 }
+function clearAllData(){
+	window.localStorage.clear();
+	for(var i = tbs.children.length-1; i > 1; i--){
+		tbs.removeChild(tbs.removeChild[i]);
+	}
+}
+function prepareFromServer(fnm){
+	clearAllData();
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(e){
+		var codes = xhr.responseText.split("\n");
+		codes.forEach(s=>{
+			if(s.split("=").length==2){
+				loadFromServerC(s);
+			}else{
+				if(s!="res"){
+					loadFromServer("data.jsp_"+s);
+				}
+			}
+//			alert(s.contains("="));
+		});
+	});
+	xhr.open("GET", fnm);
+	xhr.send();
+}
+function loadFromServerC(t){
+	var fnm = t.split("=")[1].trim();
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(e){
+		localStorage.setItem("!"+fnm, xhr.responseText);
+		tabNew("!"+fnm);
+	});
+	xhr.open("GET", "data.jsp_code="+fnm);
+	xhr.send();
+}
 function loadFromServer(t){
 	var target = document.querySelector("p");
 	var xhr = new XMLHttpRequest();
 	xhr.addEventListener("load", function(e){
 		target.innerHTML = xhr.responseText;
 	});
-	xhr.open("GET", "data.jsp");
+	xhr.open("GET", t);
 	xhr.send();
 }
 </script>
@@ -273,19 +321,22 @@ body{
 #edy li[indent="6"]{padding-left:12em;}
 #edy li[indent="7"]{padding-left:14em;}
 #edy li[indent="8"]{padding-left:16em;}
+#edy li.mark{
+	background-color:yellow;
+}
 label input{
 	display:none;
 }
 </style>
 
 <menu>
-<label>LOAD<input type="button" onclick="loadFromServer(this)" /></label>
+<label>LOAD<input type="button" onclick="prepareFromServer('data.jsp')" /></label>
 <label>NEW<input type="button" onclick="tabNew('untitled.txt')" /></label>
 <label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
 <label>SAVE<input type="button" onclick="saveToLocal()" /></label>
 <label>UPLOAD<input type="button" onclick="sendToServer()" /></label>
 </menu>
-<p>
+<p class="jplas">
 このエディタはコード作成用です．ノートパッドやちゃんとしたアプリケーションを使いたくない場合に使います．
 <span lang="e">This editor is for editing a code. When do not want to use notepad or application.</span>
 上のメニューから「NEW」を選択すると，新規の文書がuntitled.txtとして作成されます．
