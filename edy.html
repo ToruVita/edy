@@ -224,6 +224,15 @@ function sendToServer(){
 	xhr.open("POST", "up.jsp");
 	xhr.send(formData);
 }
+function loadFromServer(t){
+	var target = document.querySelector("p");
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(e){
+		target.innerHTML = xhr.responseText;
+	});
+	xhr.open("GET", "data.jsp");
+	xhr.send();
+}
 </script>
 
 <style>
@@ -270,6 +279,7 @@ label input{
 </style>
 
 <menu>
+<label>LOAD<input type="button" onclick="loadFromServer(this)" /></label>
 <label>NEW<input type="button" onclick="tabNew('untitled.txt')" /></label>
 <label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
 <label>SAVE<input type="button" onclick="saveToLocal()" /></label>
