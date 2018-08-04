@@ -23,6 +23,7 @@ function tabNew(s){
 			li.classList.add("fixed");
 		}
 		tbs.append(li);
+		li.focus();
 	}
 }
 function tagDel(t){
@@ -56,7 +57,6 @@ function loadLocalFiles(t){
 	for(var i = 0; i < t.files.length; i++){
 		if(t.files[i].name.match(editableExt)){
 			file2localStorage(t.files[i]);
-			tabNew(t.files[i].name);
 		}
 	}
 }
@@ -64,12 +64,16 @@ function file2localStorage(f){
 	var reader = new FileReader();
 	reader.onload = function () {
 		localStorage.setItem(f.name, reader.result);
+		tabNew(f.name);
 	}
 	reader.readAsText(f);
 }
 function localStorage2edy(k){
 	edy.innerText = "";
 	var str = localStorage.getItem(k);
+	if(str==null){
+		str = " ";
+	}
 	var ss = str.split("\n");
 	ss.forEach(s=>{
 		var li = document.createElement("li");
@@ -189,7 +193,14 @@ label input{
 <label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
 <label>SAVE<input type="button" onclick="saveToLocal()" /></label>
 </menu>
-
+<p>
+このエディタはコード作成用です．ノートパッドやちゃんとしたアプリケーションを使いたくない場合に使います．
+This editor is for editing a code. When do not want to use notepad or application.
+上のメニューから「NEW」を選択すると，新規の文書がuntitled.txtとして作成されます．
+「OPEN」から，既存のコードを選択してそのコピーを開くことも出来ます．「SAVE」は編集中のデータをダウンロードします．
+ファイル名の編集は，コードの編集後タグを再度選択すると編集可能になります．このときファイル名をすべて消すと編集中のコードも消えます．
+編集領域へのコピペなどでレイアウトが崩れた場合は，リロードすると正常化することがあります．
+</p>
 <ul class="tab" id="tbs"></ul><div style="clear:both"></div>
 
 <ol id="edy">
