@@ -14,9 +14,9 @@ function tabNew(s){
 		li.addEventListener("focus", function(e){tabSel(this);});
 		li.addEventListener("blur", function(){
 			if(this.innerText.trim().length==0){
-				tagDel(this);
+				tabDel(this);
 			}else{
-				tagRen(this);
+				tabRen(this);
 			}
 		});
 		if(s.substr(0,1)=='!'){
@@ -26,11 +26,11 @@ function tabNew(s){
 		li.focus();
 	}
 }
-function tagDel(t){
+function tabDel(t){
 	localStorage.removeItem(t.getAttribute("oldName"));
 	t.parentNode.removeChild(t);
 }
-function tagRen(t){
+function tabRen(t){
 	edy2localStorage();
 	localStorage.removeItem(t.getAttribute("oldName"));
 	t.removeAttribute("oldName");
@@ -238,9 +238,9 @@ function sendToServer(){
 	xhr.send(formData);
 }
 function clearAllData(){
-	window.localStorage.clear();
-	for(var i = tbs.children.length-1; i > 1; i--){
-		tbs.removeChild(tbs.removeChild[i]);
+	while(tbs.children.length > 1){
+		tbs.children[1].setAttribute("oldName", tbs.children[1].innerText);
+		tabDel(tbs.children[1]);
 	}
 }
 function prepareFromServer(fnm){
