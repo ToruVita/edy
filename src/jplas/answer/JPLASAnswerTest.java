@@ -14,7 +14,8 @@ import java.util.List;
 import org.junit.Test;
 
 public class JPLASAnswerTest {
-
+	String testFile = "C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180807\\edy\\src\\jplas\\answer\\JPLASAnswer.java";
+	String sampleCodeFolder = "C:\\Users\\NobIsh\\Dropbox\\Java\\sample.codes\\src\\cc31";
 	@Test
 	public void testJPLASAnswer() {
 		JPLASAnswer jpa = new JPLASAnswer();
@@ -25,7 +26,7 @@ public class JPLASAnswerTest {
 	public void testAddResourceFile() {
 		JPLASAnswer jpa = new JPLASAnswer();
 		try {
-			jpa.addResource(new File("C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180806\\edy\\src\\jplas\\answer\\JPLASAnswer.java"));
+			jpa.addResource(new File(testFile));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -37,7 +38,7 @@ public class JPLASAnswerTest {
 	public void testAddResourceStringInputStream() {
 		JPLASAnswer jpa = new JPLASAnswer();
 		try {
-			File file = new File("C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180806\\edy\\src\\jplas\\answer\\JPLASAnswer.java");
+			File file = new File(testFile);
 			InputStream in = new FileInputStream(file);
 			jpa.addResource("JPLASAnswer.java", in);
 		} catch (FileNotFoundException e) {
@@ -55,7 +56,7 @@ public class JPLASAnswerTest {
 		JPLASAnswer jpa = new JPLASAnswer();
 		File folder = null;
 		try {
-			File file = new File("C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180806\\edy\\src\\jplas\\answer\\JPLASAnswer.java");
+			File file = new File(testFile);
 			InputStream in = new FileInputStream(file);
 			jpa.addResource("JPLASAnswer.java", in);
 			folder = jpa.prepareFolder();
@@ -79,7 +80,7 @@ public class JPLASAnswerTest {
 			File folder = File.createTempFile("jplas01", "000");
 			folder.delete();
 			folder.mkdir();
-			File file = new File("C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180806\\edy\\src\\jplas\\answer\\JPLASAnswer.java");
+			File file = new File(testFile);
 			InputStream in = new FileInputStream(file);
 			jpa.addResource("JPLASAnswer.java", in);
 			msg = jpa.compileAll(folder);
@@ -127,7 +128,7 @@ public class JPLASAnswerTest {
 		JPLASAnswer jpa = new JPLASAnswer();
 		List <String> list = new ArrayList<String>();
 		for(String s : "A.java,BTest.java,B.java".split(",")){
-			File file = new File("C:\\Users\\NobIsh\\Dropbox\\Java\\sample.codes\\src\\cc31", s);
+			File file = new File(sampleCodeFolder, s);
 			try {
 				jpa.addResource(file);
 			} catch (IOException e) {

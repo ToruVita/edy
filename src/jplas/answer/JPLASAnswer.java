@@ -22,7 +22,6 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
-
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
@@ -62,17 +61,27 @@ public class JPLASAnswer {
 			}
 		});
 	}
+	HashMap <String, String> generateIndexOfJarFiles(File folder){
+//		File folder = (targetFolder!=null)?targetFolder :new File("C:\\Users\\NobIsh\\Dropbox\\Java\\lib");
+		HashMap <String, String> jarFilePaths = new HashMap <String, String>();
+		for(File f : folder.listFiles()){
+			if(f.isFile() && f.getName().toLowerCase().endsWith(".jar")){
+				jarFilePaths.put(f.getName(), f.getAbsolutePath());
+			}else if(f.isDirectory()){
+				jarFilePaths.putAll(generateIndexOfJarFiles(f));
+			}
+		}
+		return jarFilePaths;
+	}
 	void appendPreparedFilde(String filename){
+		//TODO 		ファイル名で指定されるファイルがユーザから添付されなかった場合，サーバで準備したものを挿入する
+		HashMap <String, String> jarMap = generateIndexOfJarFiles(new File("C:\\Users\\NobIsh\\Dropbox\\Java\\lib"));
 		String baseFile = "C:\\Users\\NobIsh\\Dropbox\\Java\\lib";
 		File file = null;
-		if(filename.equals("junit-4.12.jar") || filename.equals("hamcrest-core-1.3.jar")){
-			file = new File(baseFile, filename);
-		}else if(filename.equals("CPDWrapper.java")){
-			file = new File("C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180806\\edy\\src\\jplas\\codeClone", filename);
-		}else if(filename.equals("commons-io-2.5.jar")){
-			file = new File("C:\\Users\\NobIsh\\Dropbox\\Java\\lib\\commons-io-2.5", "commons-io-2.5.jar");
-		}else if(filename.equals("jcommander-1.48.jar") || filename.equals("pmd-core-6.5.0.jar") | filename.equals("pmd-java-6.5.0.jar")){
-			file = new File("C:\\Users\\NobIsh\\Dropbox\\Java\\lib\\pmd-bin-6.5.0\\lib", filename);
+		if(filename.equals("CPDWrapper.java")){
+			file = new File("C:\\Users\\NobIsh\\AppData\\Local\\Temp\\20180807\\edy\\src\\jplas\\codeClone", filename);
+		}else if(filename.endsWith(".jar")){
+			file = new File(jarMap.get(filename));
 		}
 		try {
 			addResource(file);
