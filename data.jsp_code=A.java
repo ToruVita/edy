@@ -1,7 +1,7 @@
 package cc31;
 
 public class A {
-	int data = 20;
+	int data = 10;
 	public int getData() {
 		return data;
 	}

@@ -94,6 +94,14 @@ public class CPDWrapper{
 	public void setTargetClass(Class targetTestClass){
 		setFolder(new File(new File("").getAbsolutePath()));
 	}
+	public void setFile(File file) {
+		try {
+			cpd.add(file);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public void setFolder(File folder) {
 		for(File f : folder.listFiles()){
 			if(f.isFile() && f.getName().endsWith(".java") && !f.getName().endsWith("Test.java") && !f.getName().equals("CPDWrapper.java")){
