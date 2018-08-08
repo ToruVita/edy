@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <script>
 var editableExt = /\.(txt|html|jsp|java|c)/;
 function tabNew(s){
@@ -149,6 +150,7 @@ function saveToLocal(){
 	var dl = document.createElement("a");
 	alert(sul.innerText);
 	dl.innerText = sul.innerText;
+	alert(dl.innerText);
 	dl.setAttribute("download", sul.innerText);
 	dl.href = window.URL.createObjectURL(blob);
 	sul.innerText = "";
@@ -282,7 +284,7 @@ function loadFromServer(t){
 	xhr.send();
 }
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
 body{
 	background-color: gray;
@@ -355,6 +357,56 @@ label input{
 
 <ul id="fls">次のファイルをアップロードします．
 </ul>
+
+
+<style>
+footer{
+	position:fixed;
+	width:30%;
+	height:40%;
+	right:0px;
+	bottom:0px;
+	background-image:url('image/smile.png');
+	background-size:contain;
+	background-repeat:no-repeat;
+	color:white;
+}
+footer p{
+	border-radius:10px;
+	padding:10px;
+	background-color:rgba(0,0,0,0.5);
+	position:absolute;
+	overflow-wrap: break-word;
+	bottom:0px;
+	right:0px;
+	left:0px;
+	text-overflow:ellipsis;
+}
+footer p:after{
+	content:"岡大JPLAS"
+}
+footer p:after :hover{
+	color:red;
+}
+footer p span{
+	background-color:rgba(255,255,255,0.5);
+	margin-left:3px;
+}
+</style>
+
+<footer>
+<p id="res" onclick="testEv();">lk:askfassdfasodifpasoidfpasoidfa@posdifa@psoidfapsoidfa@psoidfapsodifas@pdofikf
+<span onclick="this.parentNode.children[0].innerText='&copy;岡大JPLAS'">&rtrif;</span>
+</p>
+</div>
+<script>
+var ftr = document.querySelector("#res");
+ftr.addEventListener("click", function(e){
+	alert(e.pageX+" , "+e.clientX);
+	alert(e.pageY+" , "+e.clientY);
+	alert(e.target);
+});
+</script>
 
 <script>
 Object.keys(localStorage).forEach(k=>{
