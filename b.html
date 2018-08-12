@@ -1,0 +1,94 @@
+﻿<style>
+li span{
+float:right;
+}
+</style>
+<script>
+var ffiles = [];
+function toggle(t){
+	if(t.style.display=="block"){
+		t.style.display ="none";
+	}else{
+		t.style.display ="block";
+	}
+}
+function addFile(files){
+	for(var i = 0; i < files.length; i++){
+		var flg = 0;
+		ffiles.forEach((fitem, index)=>{
+			if(fitem.name==files[i].name){
+				flg = 1;
+			}
+		});
+		if(flg == 0){
+			ffiles.push(files[i]);
+		}
+	}
+	showFiles();
+}
+function showFiles(){
+	var ul = document.querySelector("ul");
+	ul.innerText = "";
+	for(var i = 0; i < ffiles.length; i++){
+		var li = document.createElement("li");
+		li.innerText = ffiles[i].name;
+		li.onclick=function(){
+			var findLi = this.children;
+			for (var i = 0; i < findLi.length; i++){
+				toggle(findLi[i]);
+			}
+		};
+		var td = document.createElement("span");
+		td.innerText = "DEL";
+		td.style.display ="none";
+		td.onclick = function(){
+			delFile(this.parentNode.childNodes[0].data);
+		};
+		li.append(td);
+		ul.append(li);
+	}
+}
+function delFile(nm){
+	var idx = -1;
+	ffiles.forEach((fitem, index)=>{
+		if(fitem.name==nm){
+			idx = index;
+		}
+	});
+	ffiles.splice(idx, 1);
+	showFiles()
+}
+function goIT(){
+	fileupload();
+}
+function updateProgress (oEvent) {
+  if (oEvent.lengthComputable) {
+    var percentComplete = oEvent.loaded / oEvent.total * 100;
+	var spanProgress = document.querySelector("span#progress");
+	spanProgress.innerText = percentComplete + "%";
+    // ...
+  } else {
+    // 全体の長さが不明なため、進捗情報を計算できない
+  }
+}
+function fileupload(){
+	var fd = new FormData();
+	ffiles.forEach((fitem, index)=>{
+		fd.append( "file", fitem );
+	});
+	Object.keys(localStorage).forEach(k=>{
+		var fnm = k;
+		var blob = new Blob([localStorage.getItem(fnm)], { type: "text/xml"});
+		fd.append("webmasterfile", blob, fnm);
+	});
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("progress", updateProgress);
+	xhr.open('POST', 'up3.jsp');
+//	xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+	xhr.send( fd );
+}
+</script>
+<input type="file" multiple=true onChange="addFile(this.files)" />
+<ul>
+</ul>
+<a class="button" href="javascript:goIT()">UPLOAD</a><span id="progress"></span>

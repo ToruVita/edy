@@ -1,0 +1,417 @@
+<meta charset="utf-8">
+<script>
+var editableExt = /\.(txt|html|jsp|java|c)/;
+function tabNew(s){
+	var flg = 0;
+	for(var i = 0; i < tbs.children.length; i++){
+		if(tbs.children[i].innerText == s){
+			flg = 1;
+		}
+	}
+	if(flg == 0){
+		var li = document.createElement("li");
+		li.innerText = s;
+		li.setAttribute("tabindex", tbs.children.length+2);
+		li.addEventListener("focus", function(e){tabSel(this);});
+		li.addEventListener("blur", function(){
+			if(this.innerText.trim().length==0){
+				tabDel(this);
+			}else{
+				tabRen(this);
+			}
+		});
+		if(s.substr(0,1)=='!'){
+			li.classList.add("fixed");
+		}
+		tbs.append(li);
+		li.focus();
+	}
+}
+function tabDel(t){
+	localStorage.removeItem(t.getAttribute("oldName"));
+	t.parentNode.removeChild(t);
+}
+function tabRen(t){
+	edy2localStorage();
+	localStorage.removeItem(t.getAttribute("oldName"));
+	t.removeAttribute("oldName");
+}
+function tabSel(t){
+	if(t.classList.contains("selected")){
+		t.setAttribute("oldName", t.innerText);
+		t.setAttribute("contenteditable", true);
+	}else{
+		for(var i = 0; i < tbs.children.length; i++){
+			tbs.children[i].classList.remove("selected");
+			tbs.children[i].removeAttribute("contenteditable");
+		}
+		t.classList.add("selected");
+		if(t.classList.contains("fixed")){
+			edy.removeAttribute("contenteditable");
+		}else{
+			edy.setAttribute("contenteditable", true);
+		}
+		localStorage2edy(t.innerText);
+		markUp(t.innerText);
+	}
+	showFiles(false);
+}
+function loadLocalFiles(t){
+	for(var i = 0; i < t.files.length; i++){
+		if(t.files[i].name.match(editableExt)!=null){
+			file2localStorage(t.files[i]);
+		}else{
+			files.push(t.files[i]);
+		}
+	}
+	tbs.children[0].click();
+}
+function file2localStorage(f){
+	var reader = new FileReader();
+	reader.onload = function () {
+		localStorage.setItem(f.name, reader.result);
+		tabNew(f.name);
+	}
+	reader.readAsText(f);
+}
+function localStorage2edy(k){
+	edy.innerText = "";
+	var str = localStorage.getItem(k);
+	if(str==null){
+		str = " ";
+	}
+	var ss = str.split("\n");
+	ss.forEach(s=>{
+		var li = document.createElement("li");
+		var ind = 1+s.lastIndexOf("\t");
+		if(ind>0){
+			li.setAttribute("indent", ind);
+		}
+		if(s.match(/<input class .+/)!=null){
+			li.innerHTML = s.trim();
+		}else{
+			li.innerText = s.trim();
+		}
+		markUp(li, edy.children.length, k);
+		edy.append(li);
+	});
+}
+function markUp(targetElement, lineNo, fnm){
+	if(fnm=="!A.java" || fnm=="!B.java"){
+		if(lineNo+1>=5 && lineNo+1<5+3){
+			targetElement.classList.add("mark");
+		}
+	}
+}
+function edy2localStorage(){
+	var sul = document.querySelector("#tbs li.selected");
+	var str = "";
+	for(var i = 0; i < edy.children.length; i++){
+		if(str.length>0){
+			str = str + "\n";
+		}
+		for(var j = 0; j < parseInt(edy.children[i].getAttribute("indent")); j++){
+			str = str + "\t";
+		}
+		str = str + edy.children[i].innerText;
+	}
+	localStorage.setItem(sul.innerText, str);
+}
+function edyIndentUp(t, i){
+	var s = t.getAttribute("indent");
+	if(s==null){
+		s="0";
+	}
+	var ind = parseInt(s);
+	ind = ind + i;
+	if(ind < 1){
+		t.removeAttribute("indent");
+	}else{
+		t.setAttribute("indent", ind);
+	}
+}
+function edyKeydown(e){
+	var selection = window.getSelection();
+	var range = selection.getRangeAt(0);
+	var txtnd = range.commonAncestorContainer;
+	var nd = txtnd.parentNode;
+	if(e.keyCode==9){
+		e.preventDefault();
+		if(e.shiftKey){
+			edyIndentUp(nd, -1);
+		}else{
+			edyIndentUp(nd, 1);
+		}
+	}
+}
+function saveToLocal(){
+	var sul = document.querySelector("#tbs li.selected");
+	var blob = new Blob([ localStorage.getItem(sul.innerText) ], { "type" : "text/plain" });
+	var dl = document.createElement("a");
+	alert(sul.innerText);
+	dl.innerText = sul.innerText;
+	alert(dl.innerText);
+	dl.setAttribute("download", sul.innerText);
+	dl.href = window.URL.createObjectURL(blob);
+	sul.innerText = "";
+	sul.append(dl);
+	dl.click();
+	sul.innerText = dl.innerText;
+}
+function showFiles(b){
+	if(b){
+		edy.style.display="none";
+		fls.style.display="block";
+		fls.innerText = "次のファイルをアップロードします．";
+		for(var i = 1; i < tbs.children.length; i++){
+			if(tbs.children[i].classList.contains("selected")){
+				tbs.children[i].classList.remove("selected");
+			}
+			var li = document.createElement("li");
+			li.innerText=tbs.children[i].innerText;
+			if(li.innerText.substr(0,1)=='!'){
+				li.style.listStyleType="circle";
+			}else{
+				li.style.listStyleType="disc";
+			}
+			li.addEventListener("click", function(e){
+				if(this.style.listStyleType=="disc"){
+					this.style.listStyleType="circle";
+				}else{
+					this.style.listStyleType="disc";
+				}
+			});
+			fls.append(li);
+		}
+		files.forEach(f=>{
+			var li = document.createElement("li");
+			li.innerText=f.name;
+			li.style.listStyleType="disc";
+			li.addEventListener("click", function(e){
+				if(this.style.listStyleType=="disc"){
+					this.style.listStyleType="circle";
+				}else{
+					this.style.listStyleType="disc";
+				}
+			});
+			fls.append(li);
+		});
+		tbs.children[0].classList.add("selected");
+	}else{
+		edy.style.display="block";
+		fls.style.display="none";
+	}
+}
+function isFileForUp(fnm){
+	var flg = false;
+	for(var i = 0; i < fls.children.length; i++){
+		if(fls.children[i].name==fnm){
+			if(fls.children[i].style.listStyleType!="circle"){
+				flg = true;
+			}
+		}
+	}
+	return flg;
+}
+function sendToServer(){
+	var formData = new FormData();
+	Object.keys(localStorage).forEach(k=>{
+		var fnm = k;
+		var blob = new Blob([localStorage.getItem(fnm)], { type: "text/xml"});
+		formData.append("webmasterfile", blob, fnm);
+	});
+//	formData.append("userID", "u0001");
+//	formData.append("questionID", "q0001");
+	var xhr = new XMLHttpRequest();
+//	xhr.upload.addEventListener("progress", function(e){
+//		msg.innerText = e.loaded;
+//		msg.append(" / ");
+//		msg.append(""+e.total);
+//	}, false);
+	xhr.onreadystatechange = function () {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+			var str = xhr.responseText.trim();
+			localStorage.setItem("resAll", str);
+			ldy.children[0].innerText = str.split("Match:").length+" 個のコードクローンがあります";
+//            alert(xhr.responseText);
+        }
+    }
+	xhr.open("POST", "up3.jsp");
+	xhr.send(formData);
+}
+function clearAllData(){
+	while(tbs.children.length > 1){
+		tbs.children[1].setAttribute("oldName", tbs.children[1].innerText);
+		tabDel(tbs.children[1]);
+	}
+}
+function prepareFromServer(fnm){
+	clearAllData();
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(e){
+		var codes = xhr.responseText.split("\n");
+		codes.forEach(s=>{
+			if(s.split("=").length==2){
+				loadFromServerC(s);
+			}else{
+				if(s!="res"){
+					loadFromServer("data.jsp_"+s);
+				}
+			}
+//			alert(s.contains("="));
+		});
+	});
+	xhr.open("GET", fnm);
+	xhr.send();
+}
+function loadFromServerC(t){
+	var fnm = t.split("=")[1].trim();
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(e){
+		localStorage.setItem("!"+fnm, xhr.responseText);
+		tabNew("!"+fnm);
+	});
+	xhr.open("GET", "data.jsp_code="+fnm);
+	xhr.send();
+}
+function loadFromServer(t){
+	var target = document.querySelector("p");
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(e){
+		target.innerHTML = xhr.responseText;
+	});
+	xhr.open("GET", t);
+	xhr.send();
+}
+</script>
+<style>
+body{
+	background-color: gray;
+}
+#tbs li{
+	float:left;
+	list-style-type:none;
+	border:black solid 1px;
+	border-radius: 10px 10px 0px 0px;
+	padding: 0px 3px;
+	background-color: darkgray;
+}
+#tbs li.selected{
+	border-bottom:solid lightgray 1px;
+	background-color: lightgray;
+}
+#tbs li[contenteditable]{
+	background-color: white;
+}
+#edy,#fls{
+	margin-top:0px;
+	background-color: lightgray;
+	border-radius: 10px 10px;
+}
+#edy[contenteditable]{
+	background-color: white;
+}
+#edy li{
+	border-bottom: dashed 1px blue;
+}
+#edy li[indent="1"]{padding-left:2em;}
+#edy li[indent="2"]{padding-left:4em;}
+#edy li[indent="3"]{padding-left:6em;}
+#edy li[indent="4"]{padding-left:8em;}
+#edy li[indent="5"]{padding-left:10em;}
+#edy li[indent="6"]{padding-left:12em;}
+#edy li[indent="7"]{padding-left:14em;}
+#edy li[indent="8"]{padding-left:16em;}
+#edy li.mark{
+	background-color:yellow;
+}
+label input{
+	display:none;
+}
+</style>
+
+<menu>
+<label>CLEAR<input type="button" onclick="clearAllData()" /></label>
+<label>LOAD<input type="button" onclick="prepareFromServer('data.jsp')" /></label>
+<label>NEW<input type="button" onclick="tabNew('untitled.txt')" /></label>
+<label>OPEN<input type="file" multiple onchange="loadLocalFiles(this)" /></label>
+<label>SAVE<input type="button" onclick="saveToLocal()" /></label>
+<label>UPLOAD<input type="button" onclick="sendToServer()" /></label>
+<span id="msg">s</span>
+</menu>
+<p class="jplas">
+このエディタはコード作成用です．ノートパッドやちゃんとしたアプリケーションを使いたくない場合に使います．
+<span lang="e">This editor is for editing a code. When do not want to use notepad or application.</span>
+上のメニューから「NEW」を選択すると，新規の文書がuntitled.txtとして作成されます．
+「OPEN」から，既存のコードを選択してそのコピーを開くことも出来ます．「SAVE」は編集中のデータをダウンロードします．
+ファイル名の編集は，コードの編集後タグを再度選択すると編集可能になります．このときファイル名をすべて消すと編集中のコードも消えます．
+編集領域へのコピペなどでレイアウトが崩れた場合は，リロードすると正常化することがあります．
+</p>
+
+<ul class="tab" id="tbs">
+	<li onclick="showFiles(true)">FILES</li>
+</ul><div style="clear:both"></div>
+
+<ol id="edy">
+<li></li>
+</ol>
+
+<ul id="fls">次のファイルをアップロードします．
+</ul>
+
+
+<style>
+footer{
+	position:fixed;
+	width:33%;
+	height:44%;
+	right:0px;
+	bottom:0px;
+	background-image:url('image/smile.png');
+	background-size:contain;
+	background-repeat:no-repeat;
+	background-position:center;
+	color:white;
+}
+footer p{
+	border-radius:10px;
+	padding:10px;
+	background-color:rgba(0,0,0,0.5);
+	position:absolute;
+	overflow-wrap: break-word;
+	bottom:0px;
+	right:0px;
+	left:0px;
+	text-overflow:ellipsis;
+}
+footer p span{
+	background-color:rgba(255,255,255,0.5);
+	margin-left:3px;
+	padding: 0px 0.5em;
+	border-radius:5px;
+}
+</style>
+
+<footer id="ldy">
+<p>コードクローンのチェックをします
+<span>YES</span>
+<span>NO</span>
+</p>
+</div>
+<script>
+ldy.addEventListener("click", function(e){
+	if(e.target.innerText=="YES"){
+		sendToServer();
+	}
+});
+</script>
+
+<script>
+Object.keys(localStorage).forEach(k=>{
+	tabNew(k);
+});
+edy.addEventListener("blur", function(){edy2localStorage();});
+edy.addEventListener("keydown", function(e){edyKeydown(e);});
+var files = [];
+var msg = document.querySelector("span#msg");
+</script>

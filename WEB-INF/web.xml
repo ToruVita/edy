@@ -1,0 +1,14 @@
+<web-app>
+<context-param>
+    <param-name>targetFolder</param-name>
+    <param-value>C:\Users\NobIsh\Desktop\20180811</param-value>
+</context-param>
+<context-param>
+    <param-name>targetVFolder</param-name>
+    <param-value>F:\movies</param-value>
+</context-param>
+<context-param>
+    <param-name>targetMFolder</param-name>
+    <param-value>K:\sound</param-value>
+</context-param>
+</web-app>

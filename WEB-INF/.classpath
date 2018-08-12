@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib/SiteSvr.jar"/>
+	<classpathentry kind="lib" path="C:/Users/NobIsh/Dropbox/Java/lib/pmd-bin-6.5.0/lib/jcommander-1.48.jar"/>
+	<classpathentry kind="lib" path="C:/Users/NobIsh/Dropbox/Java/lib/pmd-bin-6.5.0/lib/pmd-core-6.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/NobIsh/Dropbox/Java/lib/pmd-bin-6.5.0/lib/pmd-java-6.5.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
